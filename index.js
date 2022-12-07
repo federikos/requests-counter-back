@@ -35,14 +35,7 @@ const mockTableData = {
 }
 
 app.on("request", (req, res) => {
-  req.m
-  if (req.url === "/") {
-    res.writeHead(200, {
-      'Content-Type': "application/json",
-      'Access-Control-Allow-Origin': '*', /* @dev First, read about security */
-      'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
-      'Access-Control-Max-Age': 2592000,
-    })
+  if (req.url === "/requests_info") {
     res.end(JSON.stringify(mockTableData));
   }
   console.log("some request");
