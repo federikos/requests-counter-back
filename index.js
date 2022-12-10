@@ -1,51 +1,46 @@
 import { createServer } from "http";
+import { getIp, getBrowser } from "./lib/headerParsers.js";
 
 const app = createServer();
 
-const mockTableData = {
-  '192.168.1.1': [
-    {
-      client: "Chrome",
-      datetime: new Date(),
-      count: 1
-    },
-    {
-      client: "Edge",
-      datetime: new Date(),
-      count: 2
-    },
-    {
-      client: "Safari",
-      datetime: new Date(),
-      count: 5
-    }
-  ],
-  '127.0.0.1': [
-    {
-      client: "Chrome",
-      datetime: new Date(),
-      count: 5
-    },
-    {
-      client: "Firefox",
-      datetime: new Date(),
-      count: 2
-    },
-  ]
-}
+const mockTableData = {};
 
 app.on("request", (req, res) => {
-  req.m
-  if (req.url === "/") {
-    res.writeHead(200, {
-      'Content-Type': "application/json",
-      'Access-Control-Allow-Origin': '*', /* @dev First, read about security */
-      'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
-      'Access-Control-Max-Age': 2592000,
-    })
+  if (req.url === "/requests_info") {
+    console.log(req.headers)
+    const ip = getIp(req.headers);
+    const browser = getBrowser(req.headers);
+
+    if (Array.isArray(mockTableData[ip])) {
+      const clientObj = Array.from(mockTableData[ip]).find(({ client }) => client == browser);
+
+      if (clientObj) {
+        clientObj.count++;
+      } else {
+        mockTableData[ip].push({
+          client: browser,
+          datetime: new Date(),
+          count: 1
+        })
+      }
+
+    } else {
+      mockTableData[ip] = [
+        {
+          client: browser,
+          datetime: new Date(),
+          count: 1
+        }
+      ]
+    }
     res.end(JSON.stringify(mockTableData));
   }
-  console.log("some request");
+
+  if (req.url === "/reset") {
+    Object.keys(mockTableData).forEach(key => delete mockTableData[key]);
+    res.writeHead(200);
+    res.end();
+  }
 });
 
 app.listen(3003, () => {
